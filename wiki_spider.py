@@ -72,7 +72,7 @@ def random_str():
 
 def mongo_link_save():
     """mongodb连接---存"""
-    client = pymongo.MongoClient('172.321.202.10', 17017)
+    client = pymongo.MongoClient('172.321.202.101', 17017)
     m_db = client.admin
     m_db.authenticate("admin123", "123456", mechanism='SCRAM-SHA-1')
     m_db = client['zhishiku111']
