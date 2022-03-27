@@ -13,6 +13,7 @@ import math
 import pymysql
 import threading
 import multiprocessing
+
 sys.path.append("..")
 import random
 import time
@@ -56,7 +57,9 @@ def is_end(next_node):
 def xpath_value(ele):
     """xpath通配td、th采集数据"""
     selector = etree.HTML(str(ele))
-    key = ''.join(selector.xpath('//*//text()')).replace('\s+', '').replace('\n', '').replace(u'\xa0', u'').replace('•', '').replace('▲', '').replace('▼', '').strip()
+    key = ''.join(selector.xpath('//*//text()')).replace('\s+', '').replace('\n', '').replace(u'\xa0', u'').replace('•',
+                                                                                                                    '').replace(
+        '▲', '').replace('▼', '').strip()
     key = Converter("zh-hans").convert(key)
     return key
 
@@ -113,12 +116,13 @@ def get_url():
     except Exception as e:
         print(e)
     finally:
-        mysql_link()[1].close()   # 关闭数据库连接
+        mysql_link()[1].close()  # 关闭数据库连接
 
 
 def request_page(page_url):
     """请求页面获取html字符串"""
-    headers = {"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"}
+    headers = {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"}
     response = requests.get(url=page_url, headers=headers)
     html_str_tmp = response.content.decode('utf-8')
     return html_str_tmp
@@ -164,10 +168,12 @@ def task(url_part):
             introduction = ''.join(selector_one.xpath('//div[@class="mw-parser-output"]//p//text()'))
             introduction = Converter("zh-hans").convert(introduction)
             # 4.采集左边正文
-            left_content = ''.join(selector_one.xpath('//div[@class="mw-parser-output"]//p//text()|//div[@class="mw-parser-output"]//ul//text()|//div[@class="mw-content-ltr"]//p//text()'))
+            left_content = ''.join(selector_one.xpath(
+                '//div[@class="mw-parser-output"]//p//text()|//div[@class="mw-parser-output"]//ul//text()|//div[@class="mw-content-ltr"]//p//text()'))
             left_content = Converter("zh-hans").convert(left_content)
             # 判断人物链接是否有侧边栏box
-            table_class = {"class": {"infobox geography vcard", "infobox vcard", "infobox geography", "infobox 地理", "infobox biography vcard", "infobox vcard plainlist"}}
+            table_class = {"class": {"infobox geography vcard", "infobox vcard", "infobox geography", "infobox 地理",
+                                     "infobox biography vcard", "infobox vcard plainlist"}}
             if not soup_one.find_all("table", table_class):
                 # 添加新的标记字段
                 baseInfoDic['entity_id'] = random_str()  # 添加id
@@ -186,7 +192,8 @@ def task(url_part):
                 list_renwu_no.append(baseInfoDic)
                 print(baseInfoDic['url'])
                 num1 += 1
-                print('进程名{}，第{}个待插入数据采集成功！--->正在添加进列表....当前数据添加进列表成功！'.format(multiprocessing.current_process().name, num1))
+                print('进程名{}，第{}个待插入数据采集成功！--->正在添加进列表....当前数据添加进列表成功！'.format(multiprocessing.current_process().name,
+                                                                               num1))
                 # 将数据插入数据库
                 if num1 % 100 == 0:
                     mycol.insert_many(list_renwu_no)
@@ -283,7 +290,6 @@ def task(url_part):
                     baseInfoDic['a_content'] = shuxing_dic  # 添加属性a标签链接
                     baseInfoDic['left_content'] = left_content  # 添加左侧正文内容
                     baseInfoDic['picture_url'] = picture_url  # 添加人物图片链接
-
                 # 将字典插入列表中
                 list_renwu_yes.append(baseInfoDic)
                 print(baseInfoDic['url'])
@@ -325,6 +331,6 @@ if __name__ == '__main__':
     print(length)
     # 将列表切片
     for i in range(p_num):
-        p.apply_async(task, args=(request_url_list[i*math.floor(length/p_num):(i+1)*math.floor(length/p_num)],))
+        p.apply_async(task,args=(request_url_list[i * math.floor(length / p_num):(i + 1) * math.floor(length / p_num)],))
     p.close()
     p.join()
